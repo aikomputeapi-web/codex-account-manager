@@ -33,26 +33,26 @@ switch ($Action) {
         if (Test-Path $AuthFile) { Remove-Item $AuthFile -Force }
         Write-Host "Opening login flow..." -ForegroundColor Yellow
         codex auth login
-        Write-Host "✔ Done. Run: codex-account save <name>" -ForegroundColor Cyan
+        Write-Host "Done. Run: codex-account save NAME" -ForegroundColor Cyan
     }
 
     "save" {
         if (-not $AccountName) { Write-Error "Please provide a name."; return }
         Copy-Item -Path $AuthFile -Destination "$StorageDir\$AccountName.auth.json" -Force
         $AccountName | Out-File -FilePath $CurrentMarker -Encoding utf8
-        Write-Host "✔ Account '$AccountName' saved locally." -ForegroundColor Green
+        Write-Host "Account '$AccountName' saved locally." -ForegroundColor Green
     }
 
     "push" {
         Write-Host "Pushing accounts to GCP ($GCSBucket)..." -ForegroundColor Cyan
         gcloud storage cp "$StorageDir\*.auth.json" "$GCSBucket/accounts/"
-        Write-Host "✔ Upload complete." -ForegroundColor Green
+        Write-Host "Upload complete." -ForegroundColor Green
     }
 
     "pull" {
         Write-Host "Pulling accounts from GCP..." -ForegroundColor Cyan
         gcloud storage cp "$GCSBucket/accounts/*.auth.json" "$StorageDir/"
-        Write-Host "✔ Download complete." -ForegroundColor Green
+        Write-Host "Download complete." -ForegroundColor Green
     }
 
     "list" {
@@ -87,7 +87,7 @@ switch ($Action) {
             $AccountName | Out-File -FilePath $CurrentMarker -Encoding utf8
             
             if (Test-Path $CodexPath) { Start-Process $CodexPath }
-            Write-Host "✔ Switched to '$AccountName'." -ForegroundColor Green
+            Write-Host "Switched to '$AccountName'." -ForegroundColor Green
         } else {
             Write-Error "Account '$AccountName' not found."
         }
@@ -97,7 +97,7 @@ switch ($Action) {
         if ($Action -and (Test-Path "$StorageDir\$Action.auth.json")) {
             & $PSCommandPath "switch" $Action
         } else {
-            Write-Host "Usage: codex-account [login | save | push | pull | list | <name>]"
+            Write-Host "Usage: codex-account [login | save | push | pull | list | NAME]"
         }
     }
 }
