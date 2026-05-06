@@ -55,6 +55,14 @@ To move to a different saved account (the script will handle closing and restart
 codex-account work
 ```
 
+### Creating a New Login
+
+Use this command when you want to clear the current Codex auth and sign in to a new account:
+
+```powershell
+codex-account newlogin
+```
+
 ### Cloud Synchronization
 
 Keep your account vault in sync across your local machine and your remote Google Cloud VMs:
@@ -81,7 +89,7 @@ codex-account list
 
 | Command | Description |
 |---------|-------------|
-| `login` | Kills Codex and clears active auth to allow a fresh login |
+| `newlogin` | Kills Codex and clears active auth to allow a fresh login |
 | `save [name]` | Saves the active `auth.json` as `[name]` |
 | `list` | Displays saved accounts; `*` marks the active one |
 | `push` | Uploads the accounts folder to your GCP bucket |
@@ -107,6 +115,9 @@ codex-account save work
 
 # List all accounts
 codex-account list
+
+# Create a new login session
+codex-account newlogin
 
 # Switch to work account
 codex-account work

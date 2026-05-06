@@ -28,10 +28,10 @@ function Stop-Codex {
 
 # --- Command Logic ---
 switch ($Action) {
-    "login" {
+    "newlogin" {
         Stop-Codex
         if (Test-Path $AuthFile) { Remove-Item $AuthFile -Force }
-        Write-Host "Opening login flow..." -ForegroundColor Yellow
+        Write-Host "Opening new account login flow..." -ForegroundColor Yellow
         codex auth login
         Write-Host "Done. Run: codex-account save NAME" -ForegroundColor Cyan
     }
@@ -97,7 +97,7 @@ switch ($Action) {
         if ($Action -and (Test-Path "$StorageDir\$Action.auth.json")) {
             & $PSCommandPath "switch" $Action
         } else {
-            Write-Host "Usage: codex-account [login | save | push | pull | list | NAME]"
+            Write-Host "Usage: codex-account [newlogin | save | push | pull | list | NAME]"
         }
     }
 }
