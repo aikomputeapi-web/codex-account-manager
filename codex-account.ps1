@@ -57,19 +57,78 @@ switch ($Action) {
 
     "list" {
         $LiveHash = if (Test-Path $AuthFile) { (Get-FileHash $AuthFile).Hash } else { "" }
-        Write-Host "`nSaved Accounts:" -ForegroundColor Gray
-        
-        Get-ChildItem $StorageDir -Filter *.auth.json | Where-Object { $_.Name -notmatch "-backup" } | ForEach-Object {
-            $name = $_.BaseName.Replace(".auth", "")
-            $isLive = ($LiveHash -eq (Get-FileHash $_.FullName).Hash)
-            
-            if ($isLive) {
-                Write-Host "  * $name (active)" -ForegroundColor Green
-            } else {
-                Write-Host "    $name" -ForegroundColor White
+        $accounts = @(Get-ChildItem $StorageDir -Filter *.auth.json | Where-Object { $_.Name -notmatch "-backup" } | ForEach-Object {
+            $_.BaseName.Replace(".auth", "")
+        })
+
+        if ($accounts.Count -eq 0) { Write-Host "No saved accounts." -ForegroundColor Yellow; return }
+
+        $cursor = 0
+
+        function Ensure-MenuBuffer($menuTop, $itemCount) {
+            $requiredHeight = [Math]::Max($menuTop + $itemCount + 2, [Console]::WindowHeight + 1)
+            if ([Console]::BufferHeight -lt $requiredHeight) {
+                try {
+                    [Console]::SetBufferSize([Console]::BufferWidth, $requiredHeight)
+                } catch {
+                    # If the host refuses buffer resizing, keep going and rely on the current buffer.
+                }
             }
         }
+
+        function Write-MenuLine($index, $selected, $accounts, $LiveHash) {
+            $targetTop = $script:menuTop + $index
+            Ensure-MenuBuffer $script:menuTop $accounts.Count
+            if ($targetTop -ge [Console]::BufferHeight) { return }
+            [Console]::SetCursorPosition(0, $targetTop)
+            $name = $accounts[$index]
+            $isLive = ($LiveHash -eq (Get-FileHash "$StorageDir\$name.auth.json").Hash)
+            $label = if ($isLive) { "** $name (active)" } else { "   $name" }
+
+            if ($selected) {
+                Write-Host ($label.PadRight(40)) -NoNewline -ForegroundColor Black -BackgroundColor Green
+            } else {
+                $color = if ($isLive) { "Green" } else { "White" }
+                Write-Host ($label.PadRight(40)) -NoNewline -ForegroundColor $color
+            }
+        }
+
         Write-Host ""
+        Write-Host "Saved Accounts (arrows to move, Enter to switch, Esc to cancel):" -ForegroundColor Gray
+        Write-Host ""
+        $script:menuTop = [Console]::CursorTop
+        Ensure-MenuBuffer $script:menuTop $accounts.Count
+        for ($i = 0; $i -lt $accounts.Count; $i++) {
+            Write-Host ""
+        }
+
+        for ($i = 0; $i -lt $accounts.Count; $i++) {
+            Write-MenuLine $i ($i -eq $cursor) $accounts $LiveHash
+        }
+
+        while ($true) {
+            $key = [Console]::ReadKey($true)
+            $previousCursor = $cursor
+
+            if     ($key.Key -eq 'UpArrow')   { $cursor = ($cursor - 1 + $accounts.Count) % $accounts.Count }
+            elseif ($key.Key -eq 'DownArrow') { $cursor = ($cursor + 1) % $accounts.Count }
+            elseif ($key.Key -eq 'Enter') {
+                [Console]::SetCursorPosition(0, $script:menuTop + $accounts.Count)
+                Write-Host ""
+                & $PSCommandPath "switch" $accounts[$cursor]
+                return
+            }
+            elseif ($key.Key -eq 'Escape') {
+                [Console]::SetCursorPosition(0, $script:menuTop + $accounts.Count)
+                Write-Host ""
+                return
+            }
+
+            if ($cursor -ne $previousCursor) {
+                Write-MenuLine $previousCursor $false $accounts $LiveHash
+                Write-MenuLine $cursor $true $accounts $LiveHash
+            }
+        }
     }
 
     "switch" {

@@ -79,7 +79,7 @@ codex-account pull
 
 ### Managing the Vault
 
-List all saved accounts and see which one is currently active (marked with an `*`):
+Launch an interactive account picker with `list`. Use arrow keys to navigate, Enter to switch, and Esc to cancel. The active account is marked with `**`, and only the changed rows are redrawn as you move:
 
 ```powershell
 codex-account list
@@ -91,7 +91,7 @@ codex-account list
 |---------|-------------|
 | `newlogin` | Kills Codex and clears active auth to allow a fresh login |
 | `save [name]` | Saves the active `auth.json` as `[name]` |
-| `list` | Displays saved accounts; `*` marks the active one |
+| `list` | Interactive picker; `**` marks the active account |
 | `push` | Uploads the accounts folder to your GCP bucket |
 | `pull` | Downloads the accounts folder from your GCP bucket |
 | `[name]` | Shorthand to switch to a specific saved account |
